@@ -1,4 +1,4 @@
-function saveLocale(context) {
+export function saveLocale(context) {
 
     var document = context.document
     var app = NSApplication.sharedApplication
@@ -9,7 +9,7 @@ function saveLocale(context) {
     {
         if (!localeContext['current_locale'])
         {
-            newLocaleByUser = getNewLocaleByUser()
+            var newLocaleByUser = getNewLocaleByUser()
             if(newLocaleByUser)
             {
                 localeContext['current_locale'] = newLocaleByUser
@@ -27,12 +27,12 @@ function saveLocale(context) {
 
 }
 
-function changeLocale(context) {
+export function changeLocale(context) {
 
     var document = context.document
     var app = NSApplication.sharedApplication
 
-    localeContext = getLocaleContext(context)
+    var localeContext = getLocaleContext(context)
 
     if(localeContext['folder_path'])
     {
@@ -160,10 +160,10 @@ function updateTextsLayersFromLocale(context,localeContext,selected_locale) {
             for (var j = 0; j < layers.count(); j++) {
                 if(layers[j].class() === MSTextLayer)
                 {
-                    key_string = unescape(layers[j].objectID())
-                    value_string = unescape(layers[j].stringValue())
+                    var key_string = unescape(layers[j].objectID())
+                    var value_string = unescape(layers[j].stringValue())
                     for (var located_key in localeText) {
-                        located_value = localeText[located_key]
+                        var located_value = localeText[located_key]
                         if(key_string == located_key)
                         {
                             layers[j].setStringValue(located_value)
@@ -228,8 +228,8 @@ function getTextLayersContent(context) {
         for (var j = 0; j < layers.count(); j++) {
             if(layers[j].class() === MSTextLayer)
             {
-                key_string = unescape(layers[j].objectID())
-                value_string = unescape(layers[j].stringValue())
+                var key_string = unescape(layers[j].objectID())
+                var value_string = unescape(layers[j].stringValue())
                 textLayerContent[key_string] = value_string
             }
         }
@@ -289,7 +289,7 @@ function getLocaleContext(context) {
             for(var i = 0; i < dirContents.count(); i++)
                 if(dirContents[i].includes(".json"))
                 {
-                    locale = dirContents[i].replace('.json','')
+                    var locale = dirContents[i].replace('.json','')
                     localeContext['locales'].push(locale)
                     if(String(configFileContent) == String(locale))
                         localeContext['current_locale'] = locale
