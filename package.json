@@ -23,5 +23,9 @@
   "devDependencies": {
     "@skpm/builder": "^0.7.0"
   },
-  "author": "wadimw <wadim11@gmail.com>"
+  "author": "wadimw <wadim11@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wadimw/texts_translate.git"
+  }
 }
