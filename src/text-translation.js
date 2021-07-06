@@ -19,7 +19,7 @@ export function saveLocale(context) {
 
         if(localeContext['current_locale'])
         {
-            var textLayersContent = getTextLayersContent(context)
+            var textLayersContent = getTexts()
             if(saveLocaleToFile(localeContext,textLayersContent))
                 context.document.showMessage("'" + localeContext['current_locale']+"' locale saved.")
         }
@@ -63,7 +63,7 @@ export function changeLocale(context) {
         okButton.setFrame(NSMakeRect(window.frame().size.width - okButton.frame().size.width - 20, 14, okButton.frame().size.width, okButton.frame().size.height))
         okButton.setKeyEquivalent("\r") // return key
         okButton.setCOSJSTargetFunction(function(sender) {
-            if(updateTextsLayersFromLocale(context, localeContext, inputField.stringValue())) {
+            if(updateTextsFromLocale(localeContext, inputField.stringValue())) {
                 context.document.showMessage("Changed to locale '"+localeContext['current_locale']+"'.")
                 window.orderOut(null)
                 NSApp.stopModal()
@@ -95,7 +95,7 @@ export function changeLocale(context) {
             if(newLocaleName){
                 localeContext['current_locale'] = newLocaleName
                 saveConfigFile(localeContext)
-                var textLayersContent = getTextLayersContent(context)
+                var textLayersContent = getTexts()
                 if(saveLocaleToFile(localeContext,textLayersContent)) {
                     context.document.showMessage("'"+localeContext['current_locale']+"' locale created.")
                     window.orderOut(null)
@@ -147,34 +147,28 @@ function saveLocaleToFile(localeContext,textLayersContent) {
     return NSString.stringWithFormat(currentLocaleContent).writeToFile_atomically_encoding_error(currentLocaleFilePath, true, NSUTF8StringEncoding, null) ? true : false;
 }
 
-function updateTextsLayersFromLocale(context,localeContext,selected_locale) {
+function updateTextsFromLocale(localeContext, selected_locale) {
+    var sketch = require('sketch/dom');
+    var document = sketch.getSelectedDocument();
+    
+    if (localeIsAvailable(localeContext, selected_locale)) {
+        var newTexts = getLocaleTextFromFile(localeContext, selected_locale);
 
-    var document = context.document
-
-    if( localeIsAvailable(localeContext,selected_locale) ) {
-        var localeText = getLocaleTextFromFile(localeContext,selected_locale)
-
-        var pages = document.pages()
-        for (var i = 0; i < pages.count(); i++) {
-            var layers = pages[i].children()
-            for (var j = 0; j < layers.count(); j++) {
-                if(layers[j].class() === MSTextLayer)
-                {
-                    var key_string = unescape(layers[j].objectID())
-                    var value_string = unescape(layers[j].stringValue())
-                    for (var located_key in localeText) {
-                        var located_value = localeText[located_key]
-                        if(key_string == located_key)
-                        {
-                            layers[j].setStringValue(located_value)
-                        }
-                    }
-                }
+        Object.keys(newTexts).forEach(layerId => {
+            var layer = document.getLayerWithID(layerId);
+            if (layer.type === "Text") {
+                layer.text = newTexts[layerId].value;
+            } else if (layer.type === "SymbolInstance") {
+                newTexts[layerId].overrides.forEach(newOverride => {
+                    var override = layer.overrides.find(o=>o.id===newOverride._id);
+                    if (override !== undefined) { override.value = newOverride.value; }
+                });
             }
-        }
+        });
+
         localeContext['current_locale'] = selected_locale
         saveConfigFile(localeContext)
-
+        
         return true
     } else {
         return false
@@ -217,26 +211,28 @@ function getNewLocaleByUser(){
 
 }
 
-function getTextLayersContent(context) {
-
-    var document = context.document
-    var pages = document.pages()
-    var textLayerContent = {}
-
-    for (var i = 0; i < pages.count(); i++) {
-        var layers = pages[i].children()
-        for (var j = 0; j < layers.count(); j++) {
-            if(layers[j].class() === MSTextLayer)
-            {
-                var key_string = unescape(layers[j].objectID())
-                var value_string = unescape(layers[j].stringValue())
-                textLayerContent[key_string] = value_string
-            }
-        }
-    }
-
-    return textLayerContent
-
+function getTexts() {
+    var texts = {}
+    var sketch = require('sketch/dom');
+    var document = sketch.getSelectedDocument();
+    sketch.find('Text',document).forEach(textLayer => {
+        if (texts[textLayer.id]) { throw "Already processed layer with id "+textLayer.id; }
+        texts[textLayer.id] = {
+            _type: "Text",
+            value: textLayer.text
+        };
+    })
+    sketch.find('SymbolInstance',document).forEach(symbolInstance => {
+        if (texts[symbolInstance.id]) { throw "Already processed layer with id "+symbolInstance.id; }
+        texts[symbolInstance.id] = {
+            _type: "SymbolInstance",
+            overrides: symbolInstance.overrides.filter(o=>o.property === "stringValue").map(override => { return {
+                _id: override.id,
+                value: override.value
+            } })
+        };
+    });
+    return texts;
 }
 
 function getLocaleContext(context) {
