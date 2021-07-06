@@ -1,0 +1,27 @@
+{
+  "name": "texts_translate",
+  "description": "Texts translation in Sketch",
+  "version": "0.1.3",
+  "engines": {
+    "sketch": ">=49.0"
+  },
+  "skpm": {
+    "name": "texts_translate",
+    "manifest": "src/manifest.json",
+    "main": "texts_translate.sketchplugin",
+    "assets": [
+      "assets/**/*"
+    ],
+    "sketch-assets-file": "sketch-assets/icons.sketch"
+  },
+  "scripts": {
+    "build": "skpm-build",
+    "watch": "skpm-build --watch",
+    "start": "skpm-build --watch --run",
+    "postinstall": "npm run build && skpm-link"
+  },
+  "devDependencies": {
+    "@skpm/builder": "^0.7.0"
+  },
+  "author": "wadimw <wadim11@gmail.com>"
+}

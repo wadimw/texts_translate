@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sketch-hq/SketchAPI/develop/docs/sketch-plugin-manifest-schema.json",
+  "appcast": "https://raw.githubusercontent.com/wadimw/texts_translate/main/appcast.xml",
+  "author": "Santi Laresgoiti Navarro, Wadim Wawrzeńczak",
+  "authorEmail": "wadim11@gmail.com",
+  "commands": [
+    {
+      "handler": "changeLocale",
+      "identifier": "texts_translate.change-locale",
+      "name": "Change locale",
+      "script": "text-translation.js",
+      "shortcut": ""
+    },
+    {
+      "handler": "saveLocale",
+      "identifier": "texts_translate.save-locale",
+      "name": "Save locale",
+      "script": "text-translation.js",
+      "shortcut": ""
+    }
+  ],
+  "description": "Texts translation in Sketch",
+  "icon": "icon.png",
+  "identifier": "com.sketchapp.examples.texts_translate",
+  "menu": {
+    "items": [
+      "texts_translate.change-locale",
+      "texts_translate.save-locale"
+    ],
+    "title": "texts_translate"
+  },
+  "name": "Texts Translation",
+  "version": "0.1.3",
+  "disableCocoaScriptPreprocessor": false
+}
