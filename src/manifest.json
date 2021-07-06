@@ -30,6 +30,5 @@
     "title": "texts_translate"
   },
   "name": "Texts Translation",
-  "version": "0.1.3",
-  "disableCocoaScriptPreprocessor": false
+  "version": "0.1.3"
 }
