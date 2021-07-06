@@ -125,7 +125,7 @@ export function changeLocale(context) {
 
 function saveConfigFile(localeContext) {
     var currentLocaleFile = localeContext['current_locale']
-    if(!NSString.stringWithFormat(currentLocaleFile).writeToFile_atomically_encoding_error(localeContext['config_file_path'], true, NSUTF8StringEncoding, null)) {
+    if(!NSString.stringWithString(currentLocaleFile).writeToFile_atomically_encoding_error(localeContext['config_file_path'], true, NSUTF8StringEncoding, null)) {
         context.document.showMessage('It has been an error when saving config file.')
     }
 }
@@ -144,7 +144,7 @@ function saveLocaleToFile(localeContext,textLayersContent) {
 
     var currentLocaleContent = JSON.stringify(textLayersContent, undefined, 2)
     var currentLocaleFilePath = localeContext['folder_path']+localeContext['current_locale']+'.json'
-    return NSString.stringWithFormat(currentLocaleContent).writeToFile_atomically_encoding_error(currentLocaleFilePath, true, NSUTF8StringEncoding, null) ? true : false;
+    return NSString.stringWithString(currentLocaleContent).writeToFile_atomically_encoding_error(currentLocaleFilePath, true, NSUTF8StringEncoding, null) ? true : false;
 }
 
 function updateTextsFromLocale(localeContext, selected_locale) {
