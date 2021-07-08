@@ -142,16 +142,18 @@ function updateTextsFromLocale(localeContext, selected_locale) {
     if (localeIsAvailable(localeContext, selected_locale)) {
         var newTexts = getLocaleTextFromFile(localeContext, selected_locale);
 
-        Object.keys(newTexts).forEach((layerId) => {
+        Object.entries(newTexts).forEach(([layerId, layerData]) => {
             var layer = document.getLayerWithID(layerId);
             if (layer.type === "Text") {
-                layer.text = newTexts[layerId].value;
+                if ("string" !== typeof layerData) throw `For ${layer.type} layer ${layerId} expected string data`;
+                layer.text = newTexts[layerId];
             } else if (layer.type === "SymbolInstance") {
-                newTexts[layerId].overrides.forEach((newOverride) => {
-                    var override = layer.overrides.find((o) => o.id === newOverride._id);
-                    if (override !== undefined) {
-                        override.value = newOverride.value;
-                    }
+                if ("object" !== typeof layerData) throw `For ${layer.type} layer ${layerId} expected object (dictionary) data`;
+                Object.entries(layerData).forEach(([overrideId, overrideData]) => {
+                    var override = layer.overrides.find((o) => o.id === overrideId);
+                    if (!override) throw `Failed to find override ${overrideId} of layer ${layerId}`;
+                    if ("string" !== typeof overrideData) throw `For override ${overrideId} of layer ${layerId} expected string data`;
+                    override.value = overrideData;
                 });
             }
         });
@@ -204,26 +206,19 @@ function getTexts() {
         if (texts[textLayer.id]) {
             throw "Already processed layer with id " + textLayer.id;
         }
-        texts[textLayer.id] = {
-            _type: "Text",
-            value: textLayer.text,
-        };
+        texts[textLayer.id] = textLayer.text;
     });
     sketch.find("SymbolInstance", document).forEach((symbolInstance) => {
         if (texts[symbolInstance.id]) {
             throw "Already processed layer with id " + symbolInstance.id;
         }
-        texts[symbolInstance.id] = {
-            _type: "SymbolInstance",
-            overrides: symbolInstance.overrides
-                .filter((o) => o.property === "stringValue")
-                .map((override) => {
-                    return {
-                        _id: override.id,
-                        value: override.value,
-                    };
-                }),
-        };
+        texts[symbolInstance.id] = symbolInstance.overrides
+            .filter((o) => o.property === "stringValue")
+            .reduce((acc, override) => {
+                if (acc[override.id] !== undefined) throw `Already processed override ${override.id} for layer ${symbolInstance.id}!`;
+                acc[override.id] = override.value;
+                return acc;
+            }, {});
     });
     return texts;
 }
