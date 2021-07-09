@@ -200,7 +200,6 @@ function getNewLocaleByUser() {
 
 function getTexts() {
     var texts = {};
-    var sketch = require("sketch/dom");
     var document = sketch.getSelectedDocument();
     sketch.find("Text", document).forEach((textLayer) => {
         if (texts[textLayer.id]) {
@@ -209,16 +208,15 @@ function getTexts() {
         texts[textLayer.id] = textLayer.text;
     });
     sketch.find("SymbolInstance", document).forEach((symbolInstance) => {
-        if (texts[symbolInstance.id]) {
-            throw "Already processed layer with id " + symbolInstance.id;
-        }
-        texts[symbolInstance.id] = symbolInstance.overrides
-            .filter((o) => o.property === "stringValue")
-            .reduce((acc, override) => {
+        if (texts[symbolInstance.id]) throw "Already processed layer with id " + symbolInstance.id;
+        var stringOverrides = symbolInstance.overrides.filter((o) => o.property === "stringValue");
+        if (stringOverrides.length > 0) {
+            texts[symbolInstance.id] = stringOverrides.reduce((acc, override) => {
                 if (acc[override.id] !== undefined) throw `Already processed override ${override.id} for layer ${symbolInstance.id}!`;
                 acc[override.id] = override.value;
                 return acc;
             }, {});
+        }
     });
     return texts;
 }
